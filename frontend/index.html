@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureShare - Private Screen Sharing</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login/Register Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content auth-modal">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-shield-alt fa-3x"></i>
+                </div>
+                <h2>Secure Screen Share</h2>
+                <p class="auth-subtitle">Private 1-on-1 screen sharing</p>
+            </div>
+            
+            <!-- Quick Login -->
+            <div class="quick-login">
+                <h3><i class="fas fa-bolt"></i> Quick Start</h3>
+                <div class="demo-credentials">
+                    <div class="credential-item">
+                        <i class="fas fa-user"></i>
+                        <span><strong>Username:</strong> demo</span>
+                    </div>
+                    <div class="credential-item">
+                        <i class="fas fa-key"></i>
+                        <span><strong>Password:</strong> demo123</span>
+                    </div>
+                </div>
+                <button onclick="quickLogin()" class="btn btn-primary btn-block">
+                    <i class="fas fa-rocket"></i> Use Demo Account
+                </button>
+                <div class="or-divider">
+                    <span>OR</span>
+                </div>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <h3><i class="fas fa-sign-in-alt"></i> Login</h3>
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" placeholder="demo" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="demo123" autocomplete="current-password">
+                </div>
+                <button onclick="login()" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <div class="auth-footer">
+                    <p>Need a new account? 
+                        <a href="#" onclick="showRegisterForm()" class="register-link">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </a>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h3><i class="fas fa-user-plus"></i> Create New Account</h3>
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" placeholder="Choose username" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="Create password" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm password" autocomplete="new-password">
+                </div>
+                <div class="form-actions">
+                    <button onclick="register()" class="btn btn-success">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                    <button onclick="showLoginForm()" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-wrapper" id="appWrapper" style="display: none;">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="app-title">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>SecureShare</h1>
+                </div>
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <span id="currentUsername">Guest</span>
+                    <button onclick="logout()" class="btn-logout" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Room Info Card -->
+            <div class="card room-card">
+                <div class="room-header">
+                    <h3><i class="fas fa-door-closed"></i> Private Room</h3>
+                    <button onclick="leaveRoom()" class="control-btn btn-secondary" id="btnLeave" disabled>
+                        <i class="fas fa-sign-out-alt"></i> Leave
+                    </button>
+                </div>
+                
+                <div class="room-id-container">
+                    <div class="room-id-label">ROOM ID</div>
+                    <div class="room-id-display">
+                        <span class="room-id" id="roomIdDisplay">----</span>
+                        <button onclick="copyRoomId()" class="quick-control" style="width: 36px; height: 36px;">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Role Display -->
+                <div class="role-display">
+                    <div class="role-badge" id="roleBadge">
+                        <i class="fas fa-user"></i>
+                        <span id="roleText">Not in room</span>
+                    </div>
+                </div>
+                
+                <!-- Connection Status -->
+                <div class="connection-status-small">
+                    <div class="status-indicator-small">
+                        <div class="status-dot-small" id="roomStatusDot"></div>
+                        <span id="roomStatusText">Disconnected</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Card -->
+            <div class="card controls-card">
+                <div class="controls-header">
+                    <h3><i class="fas fa-sliders-h"></i> Controls</h3>
+                </div>
+                
+                <div class="controls-grid">
+                    <button onclick="startScreenShare()" id="btnShare" class="control-btn share" disabled>
+                        <i class="fas fa-share-square"></i>
+                        <span>Share Screen</span>
+                    </button>
+                    
+                    <button onclick="stopScreenShare()" id="btnStop" class="control-btn stop" disabled>
+                        <i class="fas fa-stop-circle"></i>
+                        <span>Stop Sharing</span>
+                    </button>
+                    
+                    <button onclick="toggleAudio()" id="btnAudio" class="control-btn audio" disabled>
+                        <i class="fas fa-volume-up"></i>
+                        <span>Mute Audio</span>
+                    </button>
+                    
+                    <button onclick="toggleFullscreen()" id="btnFullscreen" class="control-btn fullscreen">
+                        <i class="fas fa-expand"></i>
+                        <span>Fullscreen</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Info Card -->
+            <div class="card user-info-card">
+                <div class="user-info-header">
+                    <h3><i class="fas fa-info-circle"></i> Session Info</h3>
+                </div>
+                <div class="user-details">
+                    <div class="user-detail">
+                        <i class="fas fa-user-circle"></i>
+                        <span>User: <strong id="displayUsername">-</strong></span>
+                    </div>
+                    <div class="user-detail">
+                        <i class="fas fa-clock"></i>
+                        <span>Session: <strong id="sessionTime">0:00</strong></span>
+                    </div>
+                    <div class="user-detail">
+                        <i class="fas fa-key"></i>
+                        <span>Status: <strong id="authStatus">Logged out</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Your Screen (Main Big Display) -->
+            <div class="main-video-container">
+                <video class="main-video" id="mainVideo" autoplay playsinline></video>
+                
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>Secure Screen Sharing</h2>
+                    <p>Create or join a private room to start sharing your screen securely.</p>
+                    <p>Only you and one other person can join each room.</p>
+                    <div class="empty-state-actions">
+                        <button onclick="createRoom()" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Create Room
+                        </button>
+                        <button onclick="showJoinRoomModal()" class="btn btn-secondary">
+                            <i class="fas fa-sign-in-alt"></i> Join Room
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Overlays -->
+            <div class="video-overlays">
+                <!-- Top Bar Overlay -->
+                <div class="top-bar-overlay">
+                    <div class="connection-status">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span class="status-text" id="statusText">Not authenticated</span>
+                        <div class="quality-indicator" id="qualityIndicator" style="display: none;">
+                            <div class="quality-dot active"></div>
+                            <div class="quality-dot active"></div>
+                            <div class="quality-dot"></div>
+                        </div>
+                    </div>
+                    <div class="screen-title">
+                        <i class="fas fa-shield-alt"></i>
+                        <span id="screenTitle">Secure Screen Share</span>
+                    </div>
+                </div>
+
+                <!-- Stats Overlay - Top Right (Small & Transparent) -->
+                <div class="stats-overlay" id="statsOverlay">
+                    <div class="stats-header">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Connection Stats</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-wifi"></i>
+                                <span>Bitrate</span>
+                            </div>
+                            <div class="stat-value bitrate" id="bitrateStat">0 kbps</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-clock"></i>
+                                <span>Time</span>
+                            </div>
+                            <div class="stat-value time" id="timeStat">0:00</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Role</span>
+                            </div>
+                            <div class="stat-value role" id="roleStat">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Left Overlay - Screen Sharing Status -->
+                <div class="bottom-left-overlay" id="sharingStatusOverlay" style="display: none;">
+                    <i class="fas fa-share-square"></i>
+                    <span id="sharingStatusText">Screen sharing started</span>
+                </div>
+
+                <!-- Bottom Right Overlay - Quick Controls -->
+                <div class="bottom-right-overlay">
+                    <button onclick="startScreenShare()" class="quick-control" id="quickShareBtn" title="Share Screen" disabled>
+                        <i class="fas fa-share-square"></i>
+                    </button>
+                    <button onclick="toggleFullscreen()" class="quick-control" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button onclick="showInviteModal()" class="quick-control" title="Invite">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Remote Preview (Small PIP) -->
+            <div class="remote-preview" id="remotePreview" style="display: none;">
+                <div class="preview-header">
+                    <i class="fas fa-user-friends"></i>
+                    <span id="remoteUserLabel">Other User</span>
+                </div>
+                <video class="remote-preview-video" id="remoteVideo" autoplay playsinline></video>
+                <div class="preview-overlay" id="remotePreviewOverlay">
+                    <i class="fas fa-video-slash"></i>
+                    <span>Waiting for screen...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Room Modal -->
+    <div class="modal" id="joinRoomModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-sign-in-alt"></i> Join Private Room</h2>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="joinRoomInput">Enter Room ID:</label>
+                    <input type="text" id="joinRoomInput" placeholder="e.g., ABC123" maxlength="6" autocomplete="off">
+                    <span class="form-hint">Room ID is case-sensitive</span>
+                </div>
+                
+                <div class="modal-actions">
+                    <button onclick="joinRoomFromModal()" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Join Room
+                    </button>
+                    <button onclick="hideJoinRoomModal()" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Modal -->
+    <div class="modal invite-modal" id="inviteModal">
+        <div class="modal-content">
+            <h2><i class="fas fa-share-alt"></i> Invite to Private Room</h2>
+            <div class="modal-body">
+                <p>Share this Room ID with the person you want to share screens with:</p>
+                
+                <div class="invite-code-display">
+                    <div class="invite-code" id="inviteCode">----</div>
+                    <p>Only 2 people can join this private room</p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button onclick="copyInviteCode()" class="btn btn-primary">
+                        <i class="fas fa-copy"></i> Copy Room ID
+                    </button>
+                    <button onclick="hideInviteModal()" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+                
+                <p class="invite-note">
+                    <i class="fas fa-shield-alt"></i> This is a secure private room. Only users with this Room ID can join.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
