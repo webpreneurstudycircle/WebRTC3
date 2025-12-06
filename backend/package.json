@@ -2,7 +2,7 @@
   "name": "screen-share-backend",
   "version": "1.0.0",
   "description": "Secure screen sharing with authentication",
-  "main": "server.js",
+  "src": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
